@@ -1,1 +1,29 @@
-start
+# set up working space
+pwd
+cd
+rm -fr B195515-2021-Assignment1
+mkdir B195515-2021-Assignment1
+cd B195515-2021-Assignment1
+
+# import files
+
+echo "Copying sequence files, reference sequence, and annotated sequence to current folder..."
+cp -r /localdisk/data/BPSM/AY21/ .
+# cp -r /localdisk/data/BPSM/AY21/fastq .
+# cp -r /localdisk/data/BPSM/AY21/Tcongo_genome/ .
+# cp /localdisk/data/BPSM/AY21/TriTrypDB-46_TcongolenseIL3000_2019.bed .
+
+# Perform unzip of gzip files
+# gunzip -q ./fastq/*.gz | gunzip -q *.gz
+
+# Perform QC
+mkdir FastaQC
+
+echo "Performing quality check of sequences..."
+fastqc -q -f fastq -o FastaQC -t 10 ./fastq/*.fq.gz
+unzip -q -o ./FastaQC/\*.zip | rm -fr ./FastaQC/*.zip
+
+	# file name, basic stats, %GC, 
+
+# grep ">>" fastqc_data.txt |\ grep -v ">>END"
+
