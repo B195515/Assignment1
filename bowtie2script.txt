@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# this builds the binary index files (6 files) all with the specificed prefix
+bowtie2-build dir/TriTrypDB-46_TcongolenseIL3000_2019_Genome.fasta <prefixforoutput> 
+
+# run the alignment for the first file - don't have to gunzip input files
+bowtie2 --quiet -x tryp_align1 -1 ./fastq/100k.C1-1-501_1.fq -2 ./fastq/100k.C1-1-501_2.fq \
+-S 100k.C1-1-501.sam
+
+# to loop bowtie2 for all sequences
+unset IFS
+IFS=$'\t'
+seqfilenames=$(cut -f1 fastq/100k.fqfiles | grep -v "ID")
+seqfilename1=${seqfilenames}_1.fq.gz
+seqfilename2=${seqfilenames}_2.fq.gz
+alignedoutput=${seqfilenames}.sam
+while read -r line;
+do
+bowtie2 --quiet -x tryp_align1 -1 ./fastq/$seqfilename1 -2 .fastq/$seqfilename2 \
+-S $seqfilenames.sam
+done < $seqfilenames
+	##### this needs revision
