@@ -6,24 +6,22 @@ mkdir B195515-2021-Assignment1
 cd B195515-2021-Assignment1
 
 # import files
-
 echo "Copying sequence files, reference sequence, and annotated sequence to current folder..."
 cp -r /localdisk/data/BPSM/AY21/ .
-# cp -r /localdisk/data/BPSM/AY21/fastq .
-# cp -r /localdisk/data/BPSM/AY21/Tcongo_genome/ .
-# cp /localdisk/data/BPSM/AY21/TriTrypDB-46_TcongolenseIL3000_2019.bed .
 
 # Perform unzip of gzip files
 # gunzip -q ./fastq/*.gz | gunzip -q *.gz
 
-# Perform QC
 mkdir FastaQC
-
 echo "Performing quality check of sequences..."
-fastqc -q -f fastq -o FastaQC -t 10 ./fastq/*.fq.gz
-unzip -q -o ./FastaQC/\*.zip | rm -fr ./FastaQC/*.zip
+
+# Output fastqc files to FastaQC
+fastqc -q -f fastq -o FastaQC -t 10 ./AY21/fastq/*.fq.gz
+gunzip -q ./AY21/Tcongo_genome/TriTrypDB-46_TcongolenseIL3000_2019_Genome.fasta.gz
+unzip -q -o -d ./FastaQC ./FastaQC/\*.zip 
+rm -fr ./FastaQC/*.zip
+echo "Compiling quality check output for each sequence..."
 
 	# file name, basic stats, %GC, 
 
-# grep ">>" fastqc_data.txt |\ grep -v ">>END"
-
+	# grep -i "Filename\|%GC\|>>" fastqc_data.txt |grep -v ">>END"

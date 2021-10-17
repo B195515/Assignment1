@@ -1,0 +1,13 @@
+while read fastqcfile:
+grep -i "Filename\|%GC\|>>" fastqc_data.txt |\
+grep -v ">>END" |\
+>> SummaryFastaQC.txt
+done < ./FastaQC/*fastqc/fastqc_data.txt
+
+
+grep -i "Filename\|%GC\|>>" fastqc_data.txt |\
+grep -v ">>END" |\
+>> SummaryFastaQC.txt
+
+########################
+
