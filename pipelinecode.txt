@@ -5,6 +5,9 @@ rm -fr B195515-2021-Assignment1
 mkdir B195515-2021-Assignment1
 cd B195515-2021-Assignment1
 
+#!/bin/bash
+INPUTDIR=~/B195515-2021-Assignment1/AY21
+
 # import files
 echo "Copying sequence files, reference sequence, and annotated sequence to current folder..."
 cp -r /localdisk/data/BPSM/AY21/ .
@@ -16,8 +19,8 @@ mkdir FastaQC
 echo "Performing quality check of sequences..."
 
 # Output fastqc files to FastaQC
-fastqc -q -f fastq -o FastaQC -t 10 ./AY21/fastq/*.fq.gz
-gunzip -q ./AY21/Tcongo_genome/TriTrypDB-46_TcongolenseIL3000_2019_Genome.fasta.gz
+fastqc -q -f fastq -o FastaQC -t 10 $INPUTDIR/fastq/*.fq.gz
+gunzip -q $INPUTDIR/Tcongo_genome/TriTrypDB-46_TcongolenseIL3000_2019_Genome.fasta.gz
 unzip -q -o -d ./FastaQC ./FastaQC/\*.zip 
 rm -fr ./FastaQC/*.zip
 echo "Compiling quality check output for each sequence..."
@@ -25,3 +28,13 @@ echo "Compiling quality check output for each sequence..."
 	# file name, basic stats, %GC, 
 
 	# grep -i "Filename\|%GC\|>>" fastqc_data.txt |grep -v ">>END"
+
+# this builds the binary index files (6 files) all with the specificed prefix
+echo "Building binary reference genome sequences..."
+bowtie2-build $INPUTDIR/Tcongo_genome/TriTrypDB-46_TcongolenseIL3000_2019_Genome.fasta trypgenome_ref
+
+mkdir $INPUTDIR/aligned_sam
+# Converting sam to bam
+samtools view -S -bo 100k.C1-1-501.sam > 100k.C1-1-501.bam
+echo "All done"
+

@@ -20,3 +20,50 @@ bowtie2 --quiet -x tryp_align1 -1 ./fastq/$seqfilename1 -2 .fastq/$seqfilename2 
 -S $seqfilenames.sam
 done < $seqfilenames
 	##### this needs revision
+
+###### attempt 1 of revision
+seqfilenames=$($INPUTDIR/fastq/*.fq.gz)
+cd $INPUTDIR
+for s in $seqfilenames
+do
+bowtie2 --quiet --threads 5 -x $INPUTDIR/trypgenome_ref -1 $INPUTDIR/fastq/${s}_1.fq.gz -2 $INPUTDIR/fastq/${s}_2.fq.gz -S $INPUTDIR/aligned_sam/${s}_aligned.sam
+done #### attempt did not work
+
+##### attempt2 of revision
+#!/bin/bash
+INPUTDIR="~/B195515-2021-Assignment1/AY21"
+seqfilenames=$(cut -f1 fastq/100k.fqfiles | grep -v "ID")
+unset IFS
+IFS=$'\t'
+while read -r line
+for r1 in $INPUTDIR/fastq/*_1.fq.gz
+do
+r2=${r1%_1.fq.gz}_2.fq.gz
+if [[ -f $r2 ]]
+then
+bowtie2 -x $INPUTDIR/trypgenome_ref -1 "$r1" -2 "$r2" -S "$r1"_output.sam
+else
+echo "$r2 not found" >&2
+fi
+done < $seqfilenames
+
+
+##### attempt 3
+IFS=$'\t'
+seqfiles=$(cut -f1 fastq/100k.fqfiles | grep -v "ID")
+seqfileslist=$(echo $seqfiles)
+while read line
+do
+bowtie2 -x trypgenome_ref -1 fastq/${seqfiles}_1.fq.gz -2 fastq/${seqfiles}_2.fq.gz -S aligned_sam/${seqfiles}.sam
+done < $seqfileslist
+
+#### attempt 4 (running within fastq folder)
+unset IFS
+IFS=$'\t'
+for i in $(ls *.fq | rev | cut -c 6- | rev | uniq)
+do
+#bowtie2 -x ../trypgenome_ref -1 ${i}_1.fq -2 ${i}_2.fq -S ${i}.sam
+echo -e "${i}_1.fq"
+done
+	#### alternative to edit file name
+	ls *.fq | sed -r 's/_1.fq//' | sed -r 's/_2.fq//' | uniq
