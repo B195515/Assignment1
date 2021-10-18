@@ -1,0 +1,15 @@
+### editing sam files
+
+grep -v "@" 100k.C1-1-501.cut.sam | cut -f3,4,5,6,7,8 > 100k.C1-1-501.cut2.sam
+	## or pipe output directly to a bam file
+
+### bedtools intersect, then show details on overlapping regions
+bedtools intersect -a 100k.C1-1-501.bed -b fastq/TriTrypDB-46_TcongolenseIL3000_2019.bed -wa -wb > 100k.C1-1-501.wawb.result
+
+
+### FOR SORTING WAWB FILE
+	# get only the column with gene name > sort by gene name > count the number of times gene occurs
+bedtools intersect -a 100k.C1-1-501.bed -b fastq/TriTrypDB-46_TcongolenseIL3000_2019.bed -wa -wb | cut -f10 | sort | uniq -c > 100k.C1-1-501.count
+
+
+## FILE THAT HAS ONLY GENE NAME AND GENE DESCRIPTION: indexgenenamedescription.bed

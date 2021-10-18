@@ -62,8 +62,25 @@ unset IFS
 IFS=$'\t'
 for i in $(ls *.fq | rev | cut -c 6- | rev | uniq)
 do
-#bowtie2 -x ../trypgenome_ref -1 ${i}_1.fq -2 ${i}_2.fq -S ${i}.sam
-echo -e "${i}_1.fq"
+bowtie2 -x ../trypgenome_ref -1 ${i}_1.fq -2 ${i}_2.fq -S ${i}.sam
 done
 	#### alternative to edit file name
 	ls *.fq | sed -r 's/_1.fq//' | sed -r 's/_2.fq//' | uniq
+
+
+
+unset IFS
+IFS=$'\t'
+for i in ls *.fq
+do
+if [ ${i: -5} == "_1.fq"]
+then
+i2=$(sed '$i/_1.fq/_2.fq)
+out=$(sed '$i/_1.fq//')
+bowtie2 -x ../trypgenome_ref -1 $i -2 $i2 -S $output.sam
+else
+echo "Error in processing bowtie2"
+fi
+done
+
+
