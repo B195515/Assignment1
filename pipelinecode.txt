@@ -9,7 +9,6 @@ cd B195515
 AY21=~/B195515/AY21
 FASTAQC=~/B195515/FastaQC
 FASTQ=~/B195515/AY21/fastq
-COUNTS=~/B195515/AY21/counts
 
 # import files
 echo "Copying sequence files, reference sequence, and annotated sequence to current folder..."
@@ -32,6 +31,7 @@ rm -fr $FASTAQC/*.zip
 ## Extract header line for SummaryQC
 grep -i "Filename\|%GC\|>>" $FASTAQC/100k.C1-1-501_1_fastqc/fastqc_data.txt | grep -v ">>END" | cut -f1 | paste -s > $FASTAQC/SumQC.csv
 chmod 755 $FASTAQC/SumQC.csv
+
 ## To output QC summary from each fastaqc file
 for i in $FASTAQC/*_fastqc/fastqc_data.txt
 do
@@ -58,10 +58,12 @@ echo "Now aligning sequences to reference genome with bowtie2..."
 echo
 echo
 echo "This may take a while...so go grab a snack..."
+echo
+echo
 
 for i in $(ls $FASTQ/*.fq.gz | rev | cut -c 9- | rev | uniq)
 do
-bowtie2 -p 5 -x trypgenome_ref -1 ${i}_1.fq.gz -2 ${i}_2.fq.gz | samtools view -S -bo ${i}.bam
+bowtie2 -p 8 -x trypgenome_ref -1 ${i}_1.fq.gz -2 ${i}_2.fq.gz | samtools view -S -bo ${i}.bam
 done
 
 echo

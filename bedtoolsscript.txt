@@ -17,4 +17,30 @@ done
 for i in $(ls $FASTQ/*.fq.gz | rev | cut -c 9- | rev | uniq)
 do
 bedtools intersect -a ${i}.bed -b $AY21/TriTrypDB-46_TcongolenseIL3000_2019.bed -wa -wb | cut -f10 | sort | uniq -c > ${i}.counts.txt
-done  
+done
+
+
+
+
+######
+unset IFS
+IFS=$'\t'
+countfiles=$(ls $FASTQ/*.counts.txt)
+while read line
+do
+if [ $1 == $4 ]
+{
+ 
+done < ${countfiles}
+
+####
+
+## cut -f4,5 $AY21/TriTrypDB-46_TcongolenseIL3000_2019.bed | awk '{FS="\t"; {print $2,$1}}' > index.bed
+
+
+cut -f4,5 $AY21/TriTrypDB-46_TcongolenseIL3000_2019.bed > index.bed
+
+for i in $(ls $FASTQ/*.fq.gz | rev | cut -c 9- | rev | uniq)
+do
+join -a 1 -1 1 -2 2 index.bed ${i}.counts.txt >> joined.txt
+done
