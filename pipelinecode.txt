@@ -9,6 +9,7 @@ cd B195515
 AY21=~/B195515/AY21
 FASTAQC=~/B195515/FastaQC
 FASTQ=~/B195515/AY21/fastq
+COUNTS=~/B195515/AY21/counts
 
 # import files
 echo "Copying sequence files, reference sequence, and annotated sequence to current folder..."
@@ -51,10 +52,40 @@ echo
 echo "Successful!"
 echo
 echo
-echo "Now aligning sequences to reference genome..." 
 
-# Converting sam to bam
-mkdir $AY21/aligned_sam
-samtools view -S -bo 100k.C1-1-501.sam > $AY21/aligned_sam/100k.C1-1-501.bam
+# Build bam files by using bowtie2
+echo "Now aligning sequences to reference genome with bowtie2..."
+echo
+echo
+echo "This may take a while...so go grab a snack..."
+
+for i in $(ls $FASTQ/*.fq.gz | rev | cut -c 9- | rev | uniq)
+do
+bowtie2 -p 5 -x trypgenome_ref -1 ${i}_1.fq.gz -2 ${i}_2.fq.gz | samtools view -S -bo ${i}.bam
+done
+
+echo
+echo
+echo "Now generating average expression levels per gene for each group..."
+
+# Generating count files
+for i in $(ls $FASTQ/*.fq.gz | rev | cut -c 9- | rev | uniq)
+do
+bedtools bamtobed -i ${i}.bam > ${i}.bed
+done
+
+for i in $(ls $FASTQ/*.fq.gz | rev | cut -c 9- | rev | uniq)
+do
+bedtools intersect -a ${i}.bed -b $AY21/TriTrypDB-46_TcongolenseIL3000_2019.bed -wa -wb | cut -f10 | sort | uniq -c > ${i}.counts.txt
+done
+
+echo
+echo
+echo "some message here"
+
+
+
+ 
+
 echo "All done"
 
