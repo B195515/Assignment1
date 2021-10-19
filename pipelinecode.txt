@@ -1,40 +1,60 @@
 # set up working space
 pwd
 cd
-rm -fr B195515-2021-Assignment1
-mkdir B195515-2021-Assignment1
-cd B195515-2021-Assignment1
+rm -fr B195515
+mkdir B195515
+cd B195515
 
 #!/bin/bash
-INPUTDIR=~/B195515-2021-Assignment1/AY21
+AY21=~/B195515/AY21
+FASTAQC=~/B195515/FastaQC
+FASTQ=~/B195515/AY21/fastq
 
 # import files
 echo "Copying sequence files, reference sequence, and annotated sequence to current folder..."
 cp -r /localdisk/data/BPSM/AY21/ .
-
+echo
+echo
 # Perform unzip of gzip files
 # gunzip -q ./fastq/*.gz | gunzip -q *.gz
-
 mkdir FastaQC
 echo "Performing quality check of sequences..."
-
+echo "Summarising quality check output for each sequence..."
+echo
+echo
 # Output fastqc files to FastaQC
-fastqc -q -f fastq -o FastaQC -t 10 $INPUTDIR/fastq/*.fq.gz
-gunzip -q $INPUTDIR/Tcongo_genome/TriTrypDB-46_TcongolenseIL3000_2019_Genome.fasta.gz
+fastqc -q -f fastq -o FastaQC -t 10 $AY21/fastq/*.fq.gz
+gunzip -q $AY21/Tcongo_genome/TriTrypDB-46_TcongolenseIL3000_2019_Genome.fasta.gz
 unzip -q -o -d ./FastaQC ./FastaQC/\*.zip 
-rm -fr ./FastaQC/*.zip
-echo "Compiling quality check output for each sequence..."
+rm -fr $FASTAQC/*.zip
 
-	# file name, basic stats, %GC, 
+## Extract header line for SummaryQC
+grep -i "Filename\|%GC\|>>" $FASTAQC/100k.C1-1-501_1_fastqc/fastqc_data.txt | grep -v ">>END" | cut -f1 | paste -s > $FASTAQC/SumQC.csv
+chmod 755 $FASTAQC/SumQC.csv
+## To output QC summary from each fastaqc file
+for i in $FASTAQC/*_fastqc/fastqc_data.txt
+do
+grep -i "Filename\|%GC\|>>" ${i} | grep -v ">>END" | cut -f2 | paste -s >> $FASTAQC/SumQC.csv
+done
+cut -f2 $FASTAQC/SumQC.csv > $FASTAQC/SumQC1
+cut -f1,3,4,5,6,7,8,9,10,11,12 $FASTAQC/SumQC.csv > $FASTAQC/SumQC2
+paste $FASTAQC/SumQC1 $FASTAQC/SumQC2 > $FASTAQC/SumQCsorted.csv
+cat $FASTAQC/SumQCsorted.csv
+echo ...
+echo ...
 
-	# grep -i "Filename\|%GC\|>>" fastqc_data.txt |grep -v ">>END"
-
-# this builds the binary index files (6 files) all with the specificed prefix
+# Build the binary index files (6 files) all with the specificed prefix
 echo "Building binary reference genome sequences..."
-bowtie2-build $INPUTDIR/Tcongo_genome/TriTrypDB-46_TcongolenseIL3000_2019_Genome.fasta trypgenome_ref
+bowtie2-build --quiet $AY21/Tcongo_genome/TriTrypDB-46_TcongolenseIL3000_2019_Genome.fasta trypgenome_ref
+echo
+echo
+echo "Successful!"
+echo
+echo
+echo "Now aligning sequences to reference genome..." 
 
-mkdir $INPUTDIR/aligned_sam
 # Converting sam to bam
-samtools view -S -bo 100k.C1-1-501.sam > 100k.C1-1-501.bam
+mkdir $AY21/aligned_sam
+samtools view -S -bo 100k.C1-1-501.sam > $AY21/aligned_sam/100k.C1-1-501.bam
 echo "All done"
 
