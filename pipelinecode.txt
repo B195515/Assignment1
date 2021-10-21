@@ -6,9 +6,12 @@ mkdir B195515
 cd B195515
 
 #!/bin/bash
+# Define some variables
 AY21=~/B195515/AY21
 FASTAQC=~/B195515/FastaQC
 FASTQ=~/B195515/AY21/fastq
+GENOME=~/B195515/AY21/Tcongo_genome/TriTrypDB-46_TcongolenseIL3000_2019_Genome.fasta
+GENOME_ANNOTATED=~/B195515/AY21/TriTrypDB-46_TcongolenseIL3000_2019.bed
 
 # Copy original files to B195515 folder
 echo
@@ -16,18 +19,16 @@ echo "Copying sequence files, reference sequence, and annotated sequence to curr
 cp -r /localdisk/data/BPSM/AY21/ .
 
 echo
-echo
 echo "Performing quality check of sequences..."
 echo
 echo "Summarising quality check output for each sequence..."
 echo
-echo
 
 # Make directory for QC files, output fastqc files to FastaQC
 mkdir FastaQC
-fastqc -q -f fastq -o FastaQC -t 10 $AY21/fastq/*.fq.gz
-gunzip -q $AY21/Tcongo_genome/TriTrypDB-46_TcongolenseIL3000_2019_Genome.fasta.gz
-unzip -q -o -d ./FastaQC ./FastaQC/\*.zip 
+fastqc -q -f fastq -o FastaQC -t 15 $FASTQ/*.fq.gz
+gunzip -q $GENOME.gz
+unzip -q -o -d $FASTAQC $FASTAQC/\*.zip 
 rm -fr $FASTAQC/*.zip
 
 
@@ -47,34 +48,36 @@ paste $FASTAQC/SumQC1 $FASTAQC/SumQC2 > $FASTAQC/SumQCsorted.csv
 cat $FASTAQC/SumQCsorted.csv
 rm -fr $FASTAQC/SumQC1
 rm -fr $FASTAQC/SumQC2
+rm -fr $FASTAQC/SumQC
 echo
 echo
 
 # Build the binary index files (6 files) all with the specificed prefix
 echo "Building binary reference genome sequences..."
-bowtie2-build --quiet $AY21/Tcongo_genome/TriTrypDB-46_TcongolenseIL3000_2019_Genome.fasta trypgenome_ref
+bowtie2-build --quiet $GENOME refgenome
 
-echo
 echo
 echo "Successful!"
 echo
-echo
 echo "Now aligning sequences to reference genome with bowtie2..."
-echo
 echo
 echo "This may take a while...so go grab a snack..."
 echo
-echo
 
-# Align paired-end reads to binary reference genome, then output sorted bam files bypassing sam intermediate
+# Align paired-end reads to binary reference genome, then output sorted bam files bypassing sam intermediate, and create matching BAM index file
 for i in $(ls $FASTQ/*.fq.gz | rev | cut -c 9- | rev | uniq)
 do
-bowtie2 -p 15 -x trypgenome_ref -1 ${i}_1.fq.gz -2 ${i}_2.fq.gz | samtools sort -o ${i}.sorted.bam
+bowtie2 -p 15 -x refgenome -1 ${i}_1.fq.gz -2 ${i}_2.fq.gz | samtools sort -o ${i}.sorted.bam
 done
 
+
+for i in $(ls $FASTQ/*.fq.gz | rev | cut -c 9- | rev | uniq)
+do
+samtools index -b ${i}.sorted.bam ${i}.sorted.bai
+done
+
+echo "Succesful! All bam files are now sorted and indexed" 
 echo
-echo
-echo "Now generating average expression levels per gene for each group..."
 
 # Converting bam to bed, both are sorted
 for i in $(ls $FASTQ/*.fq.gz | rev | cut -c 9- | rev | uniq)
@@ -82,30 +85,41 @@ do
 bedtools bamtobed -i ${i}.sorted.bam > ${i}.sorted.bed
 done
 
+echo "Generating bed files and aligning to annotated genome..."
 
 # Align bed files to bed reference, generate sorted count file for each output
 for i in $(ls $FASTQ/*.fq.gz | rev | cut -c 9- | rev | uniq)
 do
-bedtools intersect -a ${i}.sorted.bed -b $AY21/TriTrypDB-46_TcongolenseIL3000_2019.bed -wa -wb | cut -f10 | sort | uniq -c > ${i}.sortedcounts.tsv
+bedtools intersect -a ${i}.sorted.bed -b $GENOME_ANNOTATED -wa -wb | cut -f10 | sort | uniq -c | sed -E 's/^ *//; s/ /\t/' > ${i}.sortedcounts.tsv
 done
 
-
 echo
-echo
-echo "some message here"
+echo "Now generating average expression levels per gene for each group..."
 
 
 # Build index file for gene name and description
-cut -f4,5 $AY21/TriTrypDB-46_TcongolenseIL3000_2019.bed > joinindex.bed
+cut -f4,5 $GENOME_ANNOTATED > genecount.bed
 
 # Join all "sorted counts" file to index file by gene ID
 for i in $(ls $FASTQ/*.fq.gz | rev | cut -c 9- | rev | uniq)
 do
-join -a 1 -e -o -1 1 -2 2 joinindex.bed ${i}.sortedcounts.tsv > output
-cat output > joinindex.bed
+join -a 1 -t $'\t' -e -o -1 1 -2 2 genecount.bed ${i}.sortedcounts.tsv > output
+cat output > genecount.bed
 done
+
+
+# Make a header for counts
+echo "GENE NAME" > coltitles
+echo "GENE DESCRIPTION" >> coltitles
+cat $FASTQ/100k.fqfiles | cut -f1 | grep -v "ID" >> coltitles
+paste -s coltitles > countspergene.tsv
+cat genecount.bed >> countspergene.tsv
+
+rm -fr output genecount.bed coltitles
+
 
 
 echo "All done"
 
+###### THIS IS A TEST AREA #######
 
