@@ -96,14 +96,16 @@ echo "some message here"
 
 
 # Build index file for gene name and description
-cut -f4,5 $AY21/TriTrypDB-46_TcongolenseIL3000_2019.bed > joinindex.tsv
-
+cut -f4,5 $AY21/TriTrypDB-46_TcongolenseIL3000_2019.bed > joinindex.bed
 
 # Join all "sorted counts" file to index file by gene ID
 for i in $(ls $FASTQ/*.fq.gz | rev | cut -c 9- | rev | uniq)
 do
-join -a 1 -e -o -1 1 -2 2 joinindex.tsv ${i}.sortedcounts.tsv >> joinindex.tsv
-done 
+join -a 1 -e -o -1 1 -2 2 joinindex.bed ${i}.sortedcounts.tsv > output
+cat output > joinindex.bed
+done
+
 
 echo "All done"
+
 

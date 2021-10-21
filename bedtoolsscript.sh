@@ -20,21 +20,32 @@ bedtools intersect -a ${i}.bed -b $AY21/TriTrypDB-46_TcongolenseIL3000_2019.bed 
 done
 
 
-## cut -f4,5 $AY21/TriTrypDB-46_TcongolenseIL3000_2019.bed | awk '{FS="\t"; {print $2,$1}}' > index.bed
+## Get index file with Gene description then gene ID 
+cut -f4,5 $AY21/TriTrypDB-46_TcongolenseIL3000_2019.bed | awk '{FS="\t"; {print $2,$1}}' > index.bed
 
 
-######## THIS JOIN CODE DID NOT WORK
-cut -f4,5 $AY21/TriTrypDB-46_TcongolenseIL3000_2019.bed > index.bed
+######## SHIT WORKS BEAUTIFULLY
+cut -f4,5 $AY21/TriTrypDB-46_TcongolenseIL3000_2019.bed > joinindex.bed
 
 for i in $(ls $FASTQ/*.fq.gz | rev | cut -c 9- | rev | uniq)
 do
-join -a 1 -1 1 -2 2 index.bed ${i}.counts.txt >> joined.txt
+join -a 1 -e -o -1 1 -2 2 joinindex.bed ${i}.sortedcounts.tsv > output
+cat output > joinindex.bed
 done
 
 ###### JOIN AT FIELD1 FILE1 and FIELD2 FILE2, show unpairabble lines from file1, empty, obey format
 join -a 1 -e -o -1 1 -2 2 joinindex2.tsv 100k.WT-6-555_1.sortedcounts.txt > joined.txt
 
 join -a 1 -e -o -1 1 -2 2 joined.txt 
+
+
+
+
+### sample code
+while read line; do
+    join -a 1 file1 "$line" > output
+    cat output > file1
+    done < list
 
 
 
