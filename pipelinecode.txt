@@ -1,5 +1,5 @@
-# set up working space
-pwd
+# set up working space, must initiate code while in user's homespace
+	# all files and subsequent code will be ran while in ~/B195515 directory
 cd
 rm -fr B195515
 mkdir B195515
@@ -10,29 +10,33 @@ AY21=~/B195515/AY21
 FASTAQC=~/B195515/FastaQC
 FASTQ=~/B195515/AY21/fastq
 
-# import files
+# Copy original files to B195515 folder
+echo
 echo "Copying sequence files, reference sequence, and annotated sequence to current folder..."
 cp -r /localdisk/data/BPSM/AY21/ .
+
 echo
 echo
-# Perform unzip of gzip files
-# gunzip -q ./fastq/*.gz | gunzip -q *.gz
-mkdir FastaQC
 echo "Performing quality check of sequences..."
+echo
 echo "Summarising quality check output for each sequence..."
 echo
 echo
-# Output fastqc files to FastaQC
+
+# Make directory for QC files, output fastqc files to FastaQC
+mkdir FastaQC
 fastqc -q -f fastq -o FastaQC -t 10 $AY21/fastq/*.fq.gz
 gunzip -q $AY21/Tcongo_genome/TriTrypDB-46_TcongolenseIL3000_2019_Genome.fasta.gz
 unzip -q -o -d ./FastaQC ./FastaQC/\*.zip 
 rm -fr $FASTAQC/*.zip
 
+
 ## Extract header line for SummaryQC
 grep -i "Filename\|%GC\|>>" $FASTAQC/100k.C1-1-501_1_fastqc/fastqc_data.txt | grep -v ">>END" | cut -f1 | paste -s > $FASTAQC/SumQC.csv
 chmod 755 $FASTAQC/SumQC.csv
 
-## To output QC summary from each fastaqc file
+
+## Extract and compile QC summary from each fastaqc file
 for i in $FASTAQC/*_fastqc/fastqc_data.txt
 do
 grep -i "Filename\|%GC\|>>" ${i} | grep -v ">>END" | cut -f2 | paste -s >> $FASTAQC/SumQC.csv
@@ -41,19 +45,20 @@ cut -f2 $FASTAQC/SumQC.csv > $FASTAQC/SumQC1
 cut -f1,3,4,5,6,7,8,9,10,11,12 $FASTAQC/SumQC.csv > $FASTAQC/SumQC2
 paste $FASTAQC/SumQC1 $FASTAQC/SumQC2 > $FASTAQC/SumQCsorted.csv
 cat $FASTAQC/SumQCsorted.csv
-echo ...
-echo ...
+rm -fr $FASTAQC/SumQC1
+rm -fr $FASTAQC/SumQC2
+echo
+echo
 
 # Build the binary index files (6 files) all with the specificed prefix
 echo "Building binary reference genome sequences..."
 bowtie2-build --quiet $AY21/Tcongo_genome/TriTrypDB-46_TcongolenseIL3000_2019_Genome.fasta trypgenome_ref
+
 echo
 echo
 echo "Successful!"
 echo
 echo
-
-# Build bam files by using bowtie2
 echo "Now aligning sequences to reference genome with bowtie2..."
 echo
 echo
@@ -61,33 +66,44 @@ echo "This may take a while...so go grab a snack..."
 echo
 echo
 
+# Align paired-end reads to binary reference genome, then output sorted bam files bypassing sam intermediate
 for i in $(ls $FASTQ/*.fq.gz | rev | cut -c 9- | rev | uniq)
 do
-bowtie2 -p 8 -x trypgenome_ref -1 ${i}_1.fq.gz -2 ${i}_2.fq.gz | samtools view -S -bo ${i}.bam
+bowtie2 -p 15 -x trypgenome_ref -1 ${i}_1.fq.gz -2 ${i}_2.fq.gz | samtools sort -o ${i}.sorted.bam
 done
 
 echo
 echo
 echo "Now generating average expression levels per gene for each group..."
 
-# Generating count files
+# Converting bam to bed, both are sorted
 for i in $(ls $FASTQ/*.fq.gz | rev | cut -c 9- | rev | uniq)
 do
-bedtools bamtobed -i ${i}.bam > ${i}.bed
+bedtools bamtobed -i ${i}.sorted.bam > ${i}.sorted.bed
 done
 
+
+# Align bed files to bed reference, generate sorted count file for each output
 for i in $(ls $FASTQ/*.fq.gz | rev | cut -c 9- | rev | uniq)
 do
-bedtools intersect -a ${i}.bed -b $AY21/TriTrypDB-46_TcongolenseIL3000_2019.bed -wa -wb | cut -f10 | sort | uniq -c > ${i}.counts.txt
+bedtools intersect -a ${i}.sorted.bed -b $AY21/TriTrypDB-46_TcongolenseIL3000_2019.bed -wa -wb | cut -f10 | sort | uniq -c > ${i}.sortedcounts.tsv
 done
+
 
 echo
 echo
 echo "some message here"
 
 
+# Build index file for gene name and description
+cut -f4,5 $AY21/TriTrypDB-46_TcongolenseIL3000_2019.bed > joinindex.tsv
 
- 
+
+# Join all "sorted counts" file to index file by gene ID
+for i in $(ls $FASTQ/*.fq.gz | rev | cut -c 9- | rev | uniq)
+do
+join -a 1 -e -o -1 1 -2 2 joinindex.tsv ${i}.sortedcounts.tsv >> joinindex.tsv
+done 
 
 echo "All done"
 
