@@ -79,146 +79,55 @@ while read line; do
     cat output > file1
     done < list
 
-#### get the files in groups
-
-while read ID Sample Replicate Time Treatment End1 End2
+#### ARCHIVED: 23/10/2021
+# Build index file for gene name and description
+cut -f4,5 $GENOME_ANNOTATED > genecount.bed
+# Join all "sorted counts" file to index file by gene ID
+for i in $(ls $FASTQ/*.fq.gz | rev | cut -c 9- | rev | uniq)
 do
-elif [[ $Sample == "Clone1" ]]  &&  [[ $Time == "0" ]] && [[ $Treatment == "Uninduced" ]]
-then echo -e "$filename" >> Clone1_t0_uninduced.txt
-elif [[ $Sample == "Clone1"]] && [[$Time == "24"]] && [[$Treatment == "Uninduced" ]]
-then echo -e "$filename" >> Clone1_t24_uninduced.txt
-elif [[ $Sample == "Clone1"]] && [[$Time == "48"]] && [[$Treatment == "Uninduced" ]]
-then echo -e "$filename" >> Clone1_t48_uninduced.txt
-elif [[ $Sample == "Clone1"]] && [[$Time == "24"]] && [[$Treatment == "Induced" ]]
-then echo -e "$filename" >> Clone1_t24_induced.txt
-elif [[ $Sample == "Clone1"]] && [[$Time == "48"]] && [[$Treatment == "Induced" ]]
-then echo -e "$filename" >> Clone1_t48_induced.txt
-elif [[ $Sample == "Clone2"]] && [[$Time == "0"]] && [[$Treatment == "Uninduced" ]]
-then echo -e "$filename" >> Clone2_t0_uninduced.txt
-elif [[ $Sample == "Clone2"]] && [[$Time == "24"]] && [[$Treatment == "Uninduced" ]]
-then echo -e "$filename" >> Clone2_t24_uninduced.txt
-elif [[ $Sample == "Clone2"]] && [[$Time == "48"]] && [[$Treatment == "Uninduced" ]]
-then echo -e "$filename" >> Clone2_t48_uninduced.txt
-elif [[ $Sample == "Clone2"]] && [[$Time == "24"]] && [[$Treatment == "Induced" ]]
-then echo -e "$filename" >> Clone2_t24_induced.txt
-elif [[ $Sample == "Clone2"]] && [[$Time == "48"]] && [[$Treatment == "Induced" ]]
-then echo -e "$filename" >> Clone2_t48_induced.txt
-elif [[ $Sample == "WT"]] && [[$Time == "0"]] && [[$Treatment == "Uninduced" ]]
-then echo -e "$filename" >> WT_t0_uninduced.txt
-elif [[ $Sample == "WT"]] && [[$Time == "24"]] && [[$Treatment == "Uninduced" ]]
-then echo -e "$filename" >> WT_t24_uninduced.txt
-elif [[ $Sample == "WT"]] && [[$Time == "48"]] && [[$Treatment == "Uninduced" ]]
-then echo -e "$filename" >> WT_t48_uninduced.txt
-elif [[ $Sample == "WT"]] && [[$Time == "24"]] && [[$Treatment == "Induced" ]]
-then echo -e "$filename" >> WT_t24_induced.txt
-elif [[ $Sample == "WT"]] && [[$Time == "48"]] && [[$Treatment == "Induced" ]]
-then echo -e "$filename" >> WT_t48_induced.txt
-fi
-done < $FASTQ/100k.fqfiles
+join -a 1 -t $'\t' -e '0' -o auto -1 1 -2 2 genecount.bed ${i}.sortedcounts.tsv > output
+cat output > genecount.bed
+done
 
-##########################
-while read ID Sample Replicate Time Treatment End1 End2
-do
-scorebin=1
-if [[ $Sample == "Clone1" ]] && [[ $Time == "0" ]] && [[ $Treatment == "Uninduced" ]]
-then scorebin=1
-elif [[ $Sample == "Clone1"]] && [[$Time == "24"]] && [[$Treatment == "Uninduced" ]]
-then scorebin=2
-elif [[ $Sample == "Clone1"]] && [[$Time == "48"]] && [[$Treatment == "Uninduced" ]]
-then scorebin=3
-elif [[ $Sample == "Clone1"]] && [[$Time == "24"]] && [[$Treatment == "Induced" ]]
-then scorebin=4
-elif [[ $Sample == "Clone1"]] && [[$Time == "48"]] && [[$Treatment == "Induced" ]]
-then scorebin=5
-elif [[ $Sample == "Clone2"]] && [[$Time == "0"]] && [[$Treatment == "Uninduced" ]]
-then scorebin=6
-elif [[ $Sample == "Clone2"]] && [[$Time == "24"]] && [[$Treatment == "Uninduced" ]]
-then scorebin=7
-elif [[ $Sample == "Clone2"]] && [[$Time == "48"]] && [[$Treatment == "Uninduced" ]]
-then scorebin=8
-elif [[ $Sample == "Clone2"]] && [[$Time == "24"]] && [[$Treatment == "Induced" ]]
-then scorebin=9
-elif [[ $Sample == "Clone2"]] && [[$Time == "48"]] && [[$Treatment == "Induced" ]]
-then scorebin=10
-elif [[ $Sample == "WT"]] && [[$Time == "0"]] && [[$Treatment == "Uninduced" ]]
-then scorebin=11
-elif [[ $Sample == "WT"]] && [[$Time == "24"]] && [[$Treatment == "Uninduced" ]]
-then scorebin=12
-elif [[ $Sample == "WT"]] && [[$Time == "48"]] && [[$Treatment == "Uninduced" ]]
-then scorebin=13
-elif [[ $Sample == "WT"]] && [[$Time == "24"]] && [[$Treatment == "Induced" ]]
-then scorebin=14
-elif [[ $Sample == "WT"]] && [[$Time == "48"]] && [[$Treatment == "Induced" ]]
-then scorebin=15
-fi
-filename=$(echo -e "$ID")
-case $scorebin in
-1)
-echo -e "$filename" >> Clone1_t0_uninduced.txt ;;
-2)
-echo -e "$filename" >> Clone1_t24_uninduced.txt ;;
-3)
-echo -e "$filename" >> Clone1_t48_uninduced.txt ;;
-4)
-echo -e "$filename" >> Clone1_t24_induced.txt ;;
-5)
-echo -e "$filename" >> Clone1_t48_induced.txt ;;
-6)
-echo -e "$filename" >> Clone2_t0_uninduced.txt ;;
-7)
-echo -e "$filename" >> Clone2_t24_uninduced.txt ;;
-8)
-echo -e "$filename" >> Clone2_t48_uninduced.txt ;;
-9)
-echo -e "$filename" >> Clone2_t24_induced.txt ;;
-10)
-echo -e "$filename" >> Clone2_t48_induced.txt ;;
-11)
-echo -e "$filename" >> WT_t0_uninduced.txt ;;
-12)
-echo -e "$filename" >> WT_t24_uninduced.txt ;;
-13)
-echo -e "$filename" >> WT_t48_uninduced.txt ;;
-14)
-echo -e "$filename" >> WT_t24_induced.txt ;;
-15)
-echo -e "$filename" >> WT_t48_induced.txt ;;
-esac
-done < $FASTQ/100k.fqfiles
-##################################
+### ARCHIVED 23/10/2021
+	## COUNT MEAN PER ROW FOR COLUMN 3 ONWARDS; PRINT OUT COL1 AND COL2 AND AVERAGE
 
-##################################
-while read ID Sample Replicate Time Treatment End1 End2
-do
-if [[ $Sample == "Clone1" ]] && [[ $Time == "0" ]] && [[ $Treatment == "Uninduced" ]]
-then scorebin=1
-elif [[ $Sample == "Clone1"]] && [[$Time == "24"]] && [[$Treatment == "Uninduced" ]]
-then scorebin=2
-elif [[ $Sample == "Clone1"]] && [[$Time == "48"]] && [[$Treatment == "Uninduced" ]]
-then scorebin=3
-elif [[ $Sample == "Clone1"]] && [[$Time == "24"]] && [[$Treatment == "Induced" ]]
-then scorebin=4
-elif [[ $Sample == "Clone1"]] && [[$Time == "48"]] && [[$Treatment == "Induced" ]]
-then scorebin=5
-elif [[ $Sample == "Clone2"]] && [[$Time == "0"]] && [[$Treatment == "Uninduced" ]]
-then scorebin=6
-elif [[ $Sample == "Clone2"]] && [[$Time == "24"]] && [[$Treatment == "Uninduced" ]]
-then scorebin=7
-elif [[ $Sample == "Clone2"]] && [[$Time == "48"]] && [[$Treatment == "Uninduced" ]]
-then scorebin=8
-elif [[ $Sample == "Clone2"]] && [[$Time == "24"]] && [[$Treatment == "Induced" ]]
-then scorebin=9
-elif [[ $Sample == "Clone2"]] && [[$Time == "48"]] && [[$Treatment == "Induced" ]]
-then scorebin=10
-elif [[ $Sample == "WT"]] && [[$Time == "0"]] && [[$Treatment == "Uninduced" ]]
-then scorebin=11
-elif [[ $Sample == "WT"]] && [[$Time == "24"]] && [[$Treatment == "Uninduced" ]]
-then scorebin=12
-elif [[ $Sample == "WT"]] && [[$Time == "48"]] && [[$Treatment == "Uninduced" ]]
-then scorebin=13
-elif [[ $Sample == "WT"]] && [[$Time == "24"]] && [[$Treatment == "Induced" ]]
-then scorebin=14
-elif [[ $Sample == "WT"]] && [[$Time == "48"]] && [[$Treatment == "Induced" ]]
-then scorebin=15
-fi
+	#DO NOT USE ## SCRIPT O01
+awk 'NR == 1 {print $1, $2, "Average"; next } ## f1 is gene name, f2 is gene description
+NF > 2 { sum=0; for (i=3; i<=NF; i++) sum+=$i; print $1, $2, (sum/(NF-2)) }' OFS="\t" countmean.xls > outputfile
+        ### Script 001 output ## does not give the correct mean!
+GENE    NAME    Average
+TcIL3000.A.H_000005000.1        Retrotransposon 1.42857
+TcIL3000.A.H_000005100.1        C-5     3.83333
+TcIL3000.A.H_000005200.1        hypothetical    0
 
+	### Script 002
+awk 'NR == 1 {FS="\t"; print $1, "Average"; next }
+NF > 2 { sum=0; for (i=3; i<=NF; i++) sum+=$i; print $1, (sum/(NF-2)) }' OFS="\t" countmean.xls > outputfile
+        ### Script 002 output - gives correct mean, but column header looks weird..
+GENE    Average
+TcIL3000.A.H_000005000.1        3.33333
+TcIL3000.A.H_000005100.1        7.66667
+TcIL3000.A.H_000005300.1        9.66667
+
+	### Script 003
+awk 'NR == 1 {FS="\t"; print "GENE_NAME", "Average"; next }
+NF > 2 { sum=0; for (i=3; i<=NF; i++) sum+=$i; print $1, (sum/(NF-2)) }' OFS="\t" test_countmean > test_output
+        ### Script 003 output - correct mean, forced column header
+        GENE_NAME       Average
+        TcIL3000.A.H_000005000.1        3.33333
+        TcIL3000.A.H_000005100.1        7.66667
+        TcIL3000.A.H_000005200.1        0
+        TcIL3000.A.H_000005300.1        9.66667
+
+### ARCHIVED 23/10/2021
+# Make a header for counts
+echo "GENE NAME" > coltitles
+echo "GENE DESCRIPTION" >> coltitles
+cat $FASTQ/100k.fqfiles | cut -f1 | grep -v "ID" >> coltitles
+# Generate raw counts, compiled
+paste -s coltitles > countspergene.tsv
+cat genecount.bed >> countspergene.tsv ## move to $OUTPUT
+
+
+### THIS IS THE END OF DOCUMENT ###
