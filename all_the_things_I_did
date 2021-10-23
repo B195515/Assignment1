@@ -1,5 +1,12 @@
-commit 15a5a54f422242b4c6d6df4a9f200f07a9ec077f
-Author: B195515-2021 <email_not_found>
-Date:   Thu Oct 14 23:12:21 2021 +0100
-
-    Initiated repo and deposited pipeline draft
+a8c251c Consolidated smaller test scripts, updated main pipeline
+475d230 Counts compiled, but need headers corresponding to file name
+471d0e1 Changed script suffix to .sh, updated pipeline code
+faef23b Pipeline updated. Stuck on genecount loop
+a3b361f Updated bedtool, bowtie, and pipeline script up to Q5
+841e165 Cleaned up directory variable in pipelinecode, bowtie2 loop pending
+c04d88c Updating bowtie2 and adding fresh bedtoolscript
+a87c9d6 Updated bowtie2 attempts and pipeline script
+5aa9fd3 Adding bowtie2script to repo
+a0c0e6a Added new minor scripts for testing
+a56f986 Updated pipeline code up to question 2
+15a5a54 Initiated repo and deposited pipeline draft
